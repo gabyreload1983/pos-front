@@ -4,6 +4,7 @@ import Login from "@/features/auth/pages/Login";
 import Ventas from "@/features/ventas/pages/Ventas";
 import MainLayout from "@/layouts/MainLayout";
 import PrivateRoute from "./PrivateRoute";
+import Clientes from "@/features/clientes/pages/Clientes";
 
 const routes = [
   {
@@ -20,6 +21,7 @@ const routes = [
     children: [
       { index: true, element: <Home /> },
       { path: "ventas", element: <Ventas /> },
+      { path: "clientes", element: <Clientes /> },
     ],
   },
 ];

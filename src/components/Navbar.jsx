@@ -9,6 +9,7 @@ export default function Navbar() {
       <div className="flex gap-4">
         <Link to="/">Inicio</Link>
         {isAuthenticated && <Link to="/ventas">Ventas</Link>}
+        {isAuthenticated && <Link to="/clientes">Clientes</Link>}
       </div>
       <div>
         {isAuthenticated ? (
