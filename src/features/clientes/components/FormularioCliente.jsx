@@ -1,34 +1,37 @@
 import { useState, useEffect } from "react";
 import { clienteSchema } from "../schemas/clienteSchema";
-import { z } from "zod";
 
 export default function FormularioCliente({
   initialData = {},
   onSubmit,
   onCancel,
 }) {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    razon_social: "",
-    tipo_documento: "DNI",
-    numero_documento: "",
-    email: "",
-    telefono: "",
-    direccion: "",
-    ciudad_id: 1,
-    provincia_id: 20,
-    pais: "Argentina",
-    condicion_iva: "Consumidor Final",
-    cuit: "",
-    ...initialData,
-  });
-
+  const [formData, setFormData] = useState(getDefaultForm());
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, ...initialData }));
+    if (initialData) {
+      setFormData((prev) => ({ ...prev, ...initialData }));
+    }
   }, [initialData]);
+
+  function getDefaultForm() {
+    return {
+      nombre: "",
+      apellido: "",
+      razon_social: "",
+      tipo_documento: "DNI",
+      numero_documento: "",
+      email: "",
+      telefono: "",
+      direccion: "",
+      ciudad_id: 1,
+      provincia_id: 20,
+      pais: "Argentina",
+      condicion_iva: "Consumidor Final",
+      cuit: "",
+    };
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,180 +47,172 @@ export default function FormularioCliente({
     e.preventDefault();
     const result = clienteSchema.safeParse(formData);
     if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      setErrors(fieldErrors);
+      setErrors(result.error.flatten().fieldErrors);
     } else {
       setErrors({});
       onSubmit(formData);
+      setFormData(getDefaultForm());
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 max-w-xl bg-white dark:bg-gray-800 p-4 rounded"
+      className="bg-white border border-gray-300 rounded-lg shadow-md p-6 max-w-4xl mx-auto space-y-6"
     >
+      <h3 className="text-xl font-semibold text-gray-800">Datos del Cliente</h3>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label>Nombre</label>
-          <input
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            className="input"
-          />
-          {errors.nombre && (
-            <p className="text-red-500 text-sm">{errors.nombre[0]}</p>
-          )}
-        </div>
-        <div>
-          <label>Apellido</label>
-          <input
-            name="apellido"
-            value={formData.apellido}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>Razon Social</label>
-          <input
-            name="razon_social"
-            value={formData.razon_social}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>Tipo Documento</label>
-          <select
-            name="tipo_documento"
-            value={formData.tipo_documento}
-            onChange={handleChange}
-            className="input"
-          >
-            <option>DNI</option>
-            <option>CUIT</option>
-            <option>CUIL</option>
-            <option>Pasaporte</option>
-          </select>
-        </div>
-        <div>
-          <label>Número Documento</label>
-          <input
-            name="numero_documento"
-            value={formData.numero_documento}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>CUIT</label>
-          <input
-            name="cuit"
-            value={formData.cuit}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>Email</label>
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="input"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email[0]}</p>
-          )}
-        </div>
-        <div>
-          <label>Teléfono</label>
-          <input
-            name="telefono"
-            value={formData.telefono}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>Dirección</label>
-          <input
-            name="direccion"
-            value={formData.direccion}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label>Ciudad ID</label>
-          <input
-            type="number"
-            name="ciudad_id"
-            value={formData.ciudad_id}
-            onChange={handleNumberChange}
-            className="input"
-          />
-          {errors.ciudad_id && (
-            <p className="text-red-500 text-sm">{errors.ciudad_id[0]}</p>
-          )}
-        </div>
-        <div>
-          <label>Provincia ID</label>
-          <input
-            type="number"
-            name="provincia_id"
-            value={formData.provincia_id}
-            onChange={handleNumberChange}
-            className="input"
-          />
-          {errors.provincia_id && (
-            <p className="text-red-500 text-sm">{errors.provincia_id[0]}</p>
-          )}
-        </div>
-        <div>
-          <label>Condición IVA</label>
-          <select
-            name="condicion_iva"
-            value={formData.condicion_iva}
-            onChange={handleChange}
-            className="input"
-          >
-            <option>Responsable Inscripto</option>
-            <option>Monotributo</option>
-            <option>Consumidor Final</option>
-            <option>Exento</option>
-          </select>
-        </div>
-        <div>
-          <label>País</label>
-          <input
-            name="pais"
-            value={formData.pais}
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
+        <Input
+          label="Nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          error={errors.nombre}
+        />
+        <Input
+          label="Apellido"
+          name="apellido"
+          value={formData.apellido}
+          onChange={handleChange}
+        />
+        <Input
+          label="Razón Social"
+          name="razon_social"
+          value={formData.razon_social}
+          onChange={handleChange}
+        />
+        <Select
+          label="Tipo Documento"
+          name="tipo_documento"
+          value={formData.tipo_documento}
+          onChange={handleChange}
+          options={["DNI", "CUIT", "CUIL", "Pasaporte"]}
+        />
+        <Input
+          label="Número Documento"
+          name="numero_documento"
+          value={formData.numero_documento}
+          onChange={handleChange}
+        />
+        <Input
+          label="CUIT"
+          name="cuit"
+          value={formData.cuit}
+          onChange={handleChange}
+        />
+        <Input
+          label="Email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          error={errors.email}
+        />
+        <Input
+          label="Teléfono"
+          name="telefono"
+          value={formData.telefono}
+          onChange={handleChange}
+        />
+        <Input
+          label="Dirección"
+          name="direccion"
+          value={formData.direccion}
+          onChange={handleChange}
+        />
+        <Input
+          label="Ciudad ID"
+          name="ciudad_id"
+          type="number"
+          value={formData.ciudad_id}
+          onChange={handleNumberChange}
+          error={errors.ciudad_id}
+        />
+        <Input
+          label="Provincia ID"
+          name="provincia_id"
+          type="number"
+          value={formData.provincia_id}
+          onChange={handleNumberChange}
+          error={errors.provincia_id}
+        />
+        <Select
+          label="Condición IVA"
+          name="condicion_iva"
+          value={formData.condicion_iva}
+          onChange={handleChange}
+          options={[
+            "Responsable Inscripto",
+            "Monotributo",
+            "Consumidor Final",
+            "Exento",
+          ]}
+        />
+        <Input
+          label="País"
+          name="pais"
+          value={formData.pais}
+          onChange={handleChange}
+        />
       </div>
 
-      <div className="flex gap-2 justify-end mt-4">
+      <div className="flex justify-end gap-4">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Guardar
         </button>
         {onCancel && (
           <button
             type="button"
-            className="bg-gray-400 text-white px-4 py-2 rounded"
             onClick={onCancel}
+            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
           >
             Cancelar
           </button>
         )}
       </div>
     </form>
+  );
+}
+
+function Input({ label, name, value, onChange, error, type = "text" }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      {error && <p className="text-sm text-red-600 mt-1">{error[0]}</p>}
+    </div>
+  );
+}
+
+function Select({ label, name, value, onChange, options }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {options.map((op) => (
+          <option key={op} value={op}>
+            {op}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

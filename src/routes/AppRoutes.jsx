@@ -4,7 +4,10 @@ import Login from "@/features/auth/pages/Login";
 import Ventas from "@/features/ventas/pages/Ventas";
 import MainLayout from "@/layouts/MainLayout";
 import PrivateRoute from "./PrivateRoute";
-import Clientes from "@/features/clientes/pages/Clientes";
+import ClientesRoot from "@/features/clientes/pages/ClientesRoot";
+import ClientesLista from "@/features/clientes/pages/ClientesLista";
+import ClienteNuevo from "@/features/clientes/pages/ClienteNuevo";
+import ClienteEditar from "@/features/clientes/pages/ClienteEditar";
 
 const routes = [
   {
@@ -21,7 +24,19 @@ const routes = [
     children: [
       { index: true, element: <Home /> },
       { path: "ventas", element: <Ventas /> },
-      { path: "clientes", element: <Clientes /> },
+      {
+        path: "/clientes",
+        element: (
+          <PrivateRoute>
+            <ClientesRoot />
+          </PrivateRoute>
+        ),
+        children: [
+          { path: "lista", element: <ClientesLista /> },
+          { path: "agregar", element: <ClienteNuevo /> },
+          { path: "modificar/:id", element: <ClienteEditar /> },
+        ],
+      },
     ],
   },
 ];
