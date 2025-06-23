@@ -1,5 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { clienteSchema } from "../schemas/clienteSchema";
+import {
+  getProvincias,
+  getCiudadesPorProvincia,
+} from "../services/localizacionService";
 
 export default function FormularioCliente({
   initialData = {},
@@ -8,12 +12,24 @@ export default function FormularioCliente({
 }) {
   const [formData, setFormData] = useState(getDefaultForm());
   const [errors, setErrors] = useState({});
+  const [provincias, setProvincias] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({ ...prev, ...initialData }));
     }
-  }, [initialData]);
+  }, [JSON.stringify(initialData)]);
+
+  useEffect(() => {
+    getProvincias().then(setProvincias);
+  }, []);
+
+  useEffect(() => {
+    if (formData.provincia_id) {
+      getCiudadesPorProvincia(formData.provincia_id).then(setCiudades);
+    }
+  }, [formData.provincia_id]);
 
   function getDefaultForm() {
     return {
@@ -25,8 +41,8 @@ export default function FormularioCliente({
       email: "",
       telefono: "",
       direccion: "",
-      ciudad_id: 1,
-      provincia_id: 20,
+      ciudad_id: "",
+      provincia_id: "",
       pais: "Argentina",
       condicion_iva: "Consumidor Final",
       cuit: "",
@@ -45,7 +61,9 @@ export default function FormularioCliente({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const result = clienteSchema.safeParse(formData);
+
     if (!result.success) {
       setErrors(result.error.flatten().fieldErrors);
     } else {
@@ -75,6 +93,7 @@ export default function FormularioCliente({
           name="apellido"
           value={formData.apellido}
           onChange={handleChange}
+          error={errors.apellido}
         />
         <Input
           label="Razón Social"
@@ -87,7 +106,12 @@ export default function FormularioCliente({
           name="tipo_documento"
           value={formData.tipo_documento}
           onChange={handleChange}
-          options={["DNI", "CUIT", "CUIL", "Pasaporte"]}
+          options={[
+            { value: "DNI", label: "DNI" },
+            { value: "CUIT", label: "CUIT" },
+            { value: "CUIL", label: "CUIL" },
+            { value: "Pasaporte", label: "Pasaporte" },
+          ]}
         />
         <Input
           label="Número Documento"
@@ -120,21 +144,21 @@ export default function FormularioCliente({
           value={formData.direccion}
           onChange={handleChange}
         />
-        <Input
-          label="Ciudad ID"
-          name="ciudad_id"
-          type="number"
-          value={formData.ciudad_id}
-          onChange={handleNumberChange}
-          error={errors.ciudad_id}
-        />
-        <Input
-          label="Provincia ID"
+        <Select
+          label="Provincia"
           name="provincia_id"
-          type="number"
           value={formData.provincia_id}
           onChange={handleNumberChange}
+          options={provincias.map((p) => ({ label: p.nombre, value: p.id }))}
           error={errors.provincia_id}
+        />
+        <Select
+          label="Ciudad"
+          name="ciudad_id"
+          value={formData.ciudad_id}
+          onChange={handleNumberChange}
+          options={ciudades.map((c) => ({ label: c.nombre, value: c.id }))}
+          error={errors.ciudad_id}
         />
         <Select
           label="Condición IVA"
@@ -142,10 +166,10 @@ export default function FormularioCliente({
           value={formData.condicion_iva}
           onChange={handleChange}
           options={[
-            "Responsable Inscripto",
-            "Monotributo",
-            "Consumidor Final",
-            "Exento",
+            { value: "Responsable Inscripto", label: "Responsable Inscripto" },
+            { value: "Monotributo", label: "Monotributo" },
+            { value: "Consumidor Final", label: "Consumidor Final" },
+            { value: "Exento", label: "Exento" },
           ]}
         />
         <Input
@@ -186,7 +210,7 @@ function Input({ label, name, value, onChange, error, type = "text" }) {
       <input
         name={name}
         type={type}
-        value={value}
+        value={value ?? ""}
         onChange={onChange}
         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -195,7 +219,7 @@ function Input({ label, name, value, onChange, error, type = "text" }) {
   );
 }
 
-function Select({ label, name, value, onChange, options }) {
+function Select({ label, name, value, onChange, options, error }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,16 +227,18 @@ function Select({ label, name, value, onChange, options }) {
       </label>
       <select
         name={name}
-        value={value}
+        value={value ?? ""}
         onChange={onChange}
         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
+        <option value="">Seleccionar...</option>
         {options.map((op) => (
-          <option key={op} value={op}>
-            {op}
+          <option key={op.value} value={op.value}>
+            {op.label}
           </option>
         ))}
       </select>
+      {error && <p className="text-sm text-red-600 mt-1">{error[0]}</p>}
     </div>
   );
 }
