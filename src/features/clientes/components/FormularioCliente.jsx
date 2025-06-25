@@ -9,11 +9,14 @@ export default function FormularioCliente({
   initialData = {},
   onSubmit,
   onCancel,
+  modoEdicion = false,
 }) {
   const [formData, setFormData] = useState(getDefaultForm());
   const [errors, setErrors] = useState({});
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
+
+  const [submitFn, setSubmitFn] = useState(() => () => {});
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -43,7 +46,6 @@ export default function FormularioCliente({
       direccion: "",
       ciudad_id: "",
       provincia_id: "",
-      pais: "Argentina",
       condicion_iva: "Consumidor Final",
       cuit: "",
     };
@@ -61,17 +63,34 @@ export default function FormularioCliente({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const result = clienteSchema.safeParse(formData);
 
     if (!result.success) {
       setErrors(result.error.flatten().fieldErrors);
     } else {
       setErrors({});
-      onSubmit(formData);
-      setFormData(getDefaultForm());
+      submitFn(result.data); // <-- aquí
+      if (!modoEdicion) setFormData(getDefaultForm());
     }
   };
+
+  useEffect(() => {
+    if (typeof onSubmit === "function") {
+      const submitConErrores = async (data) => {
+        try {
+          await onSubmit(data);
+        } catch (erroresDelBackend) {
+          // Transformar formato [{campo, mensaje}] a { campo: [mensaje] }
+          const fieldErrors = {};
+          erroresDelBackend.forEach((e) => {
+            fieldErrors[e.campo] = [e.mensaje];
+          });
+          setErrors(fieldErrors);
+        }
+      };
+      setSubmitFn(() => submitConErrores);
+    }
+  }, [onSubmit]);
 
   return (
     <form
@@ -172,12 +191,18 @@ export default function FormularioCliente({
             { value: "Exento", label: "Exento" },
           ]}
         />
-        <Input
-          label="País"
-          name="pais"
-          value={formData.pais}
-          onChange={handleChange}
-        />
+        {modoEdicion && (
+          <Select
+            label="Estado"
+            name="activo"
+            value={formData.activo}
+            onChange={handleNumberChange}
+            options={[
+              { value: 1, label: "Activado" },
+              { value: 0, label: "Inactivo" },
+            ]}
+          />
+        )}
       </div>
 
       <div className="flex justify-end gap-4">

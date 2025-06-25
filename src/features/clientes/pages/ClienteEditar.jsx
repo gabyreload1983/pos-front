@@ -29,16 +29,29 @@ export default function ClienteEditar() {
 
   const handleGuardar = async (data) => {
     try {
-      await actualizarCliente(id, data);
+      await actualizarCliente(cliente.id, data);
       navigate("/clientes/lista");
     } catch (err) {
-      alert("Error al modificar cliente");
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data.error === "Error de validación"
+      ) {
+        // Devolvés el array de errores al formulario
+        throw err.response.data.detalles;
+      } else {
+        alert("Error al actualizar cliente");
+      }
     }
   };
 
   return cliente ? (
     <div className="max-w-4xl mx-auto">
-      <FormularioCliente initialData={cliente} onSubmit={handleGuardar} />
+      <FormularioCliente
+        initialData={cliente}
+        onSubmit={handleGuardar}
+        modoEdicion
+      />
     </div>
   ) : (
     <p className="text-center">Cargando cliente...</p>

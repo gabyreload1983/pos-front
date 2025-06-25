@@ -10,7 +10,16 @@ export default function ClienteNuevo() {
       await crearCliente(data);
       navigate("/clientes/lista");
     } catch (err) {
-      alert("Error al crear cliente");
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data.error === "Error de validación"
+      ) {
+        // Pasar errores al formulario
+        throw err.response.data.detalles;
+      } else {
+        alert("Error al crear cliente");
+      }
     }
   };
 

@@ -4,18 +4,28 @@ export const clienteSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
   apellido: z.string().min(1, "El apellido es obligatorio"),
 
-  razon_social: z.string().or(z.literal("")).or(z.null()).optional(),
+  razon_social: z.string().optional().nullable(),
   tipo_documento: z.enum(["DNI", "CUIT", "CUIL", "Pasaporte"]).default("DNI"),
-  numero_documento: z.string().or(z.literal("")).or(z.null()).optional(),
-  email: z.string().email("Email inválido").or(z.literal("")).or(z.null()),
-  telefono: z.string().or(z.literal("")).or(z.null()).optional(),
-  direccion: z.string().or(z.literal("")).or(z.null()).optional(),
-  cuit: z.string().or(z.literal("")).or(z.null()).optional(),
+  numero_documento: z.string().optional().nullable(),
 
-  provincia_id: z.coerce.number().min(1, "Seleccioná una provincia"),
-  ciudad_id: z.coerce.number().min(1, "Seleccioná una ciudad"),
+  email: z
+    .union([z.string().email("Email inválido"), z.literal(""), z.null()])
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
 
-  pais: z.string().or(z.literal("")).or(z.null()).default("Argentina"),
+  telefono: z.string().optional().nullable(),
+  direccion: z.string().optional().nullable(),
+  cuit: z.string().optional().nullable(),
+
+  provincia_id: z
+    .union([z.coerce.number().int().positive(), z.literal(""), z.null()])
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
+
+  ciudad_id: z
+    .union([z.coerce.number().int().positive(), z.literal(""), z.null()])
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
 
   condicion_iva: z
     .enum([
@@ -25,4 +35,6 @@ export const clienteSchema = z.object({
       "Exento",
     ])
     .default("Consumidor Final"),
+
+  activo: z.union([z.literal(1), z.literal(0)]).optional(),
 });
