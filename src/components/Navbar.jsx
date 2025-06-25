@@ -3,7 +3,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -36,10 +36,25 @@ export default function Navbar() {
         >
           {theme === "dark" ? "☀️ Claro" : "🌙 Oscuro"}
         </button>
+
         {isAuthenticated ? (
-          <button onClick={logout} className="hover:underline text-sm">
-            Cerrar sesión
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+              {user?.imagenUrl ? (
+                <img
+                  src={user.imagenUrl}
+                  alt="Perfil"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.nombre?.charAt(0).toUpperCase() || "👤"
+              )}
+            </div>
+            <span className="text-sm font-medium">{user?.nombre}</span>
+            <button onClick={logout} className="hover:underline text-sm ml-2">
+              Cerrar sesión
+            </button>
+          </div>
         ) : (
           <Link
             to="/login"
