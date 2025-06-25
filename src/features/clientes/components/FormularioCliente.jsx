@@ -95,9 +95,11 @@ export default function FormularioCliente({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border border-gray-300 rounded-lg shadow-md p-6 max-w-4xl mx-auto space-y-6"
+      className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md p-6 max-w-4xl mx-auto space-y-6"
     >
-      <h3 className="text-xl font-semibold text-gray-800">Datos del Cliente</h3>
+      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+        Datos del Cliente
+      </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
@@ -208,7 +210,7 @@ export default function FormularioCliente({
       <div className="flex justify-end gap-4">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
           Guardar
         </button>
@@ -216,7 +218,7 @@ export default function FormularioCliente({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-500"
           >
             Cancelar
           </button>
@@ -229,7 +231,7 @@ export default function FormularioCliente({
 function Input({ label, name, value, onChange, error, type = "text" }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
       </label>
       <input
@@ -237,7 +239,7 @@ function Input({ label, name, value, onChange, error, type = "text" }) {
         type={type}
         value={value ?? ""}
         onChange={onChange}
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       {error && <p className="text-sm text-red-600 mt-1">{error[0]}</p>}
     </div>
@@ -247,14 +249,14 @@ function Input({ label, name, value, onChange, error, type = "text" }) {
 function Select({ label, name, value, onChange, options, error }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
       </label>
       <select
         name={name}
         value={value ?? ""}
         onChange={onChange}
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Seleccionar...</option>
         {options.map((op) => (

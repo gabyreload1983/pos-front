@@ -25,20 +25,20 @@ export default function Ventas() {
           {ventas.map((venta) => (
             <div
               key={venta.id}
-              className="border border-gray-300 bg-white rounded shadow p-4 flex flex-col justify-between"
+              className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded shadow p-4 flex flex-col justify-between"
             >
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                   Venta #{venta.id}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
                   <strong>Total:</strong> ${venta.total}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
                   <strong>Fecha:</strong>{" "}
                   {new Date(venta.fecha).toLocaleString()}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
                   <strong>Pago:</strong> {venta.tipo_pago}
                 </p>
               </div>

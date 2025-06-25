@@ -47,6 +47,9 @@ export default function ClienteEditar() {
 
   return cliente ? (
     <div className="max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+        Editar Cliente
+      </h2>
       <FormularioCliente
         initialData={cliente}
         onSubmit={handleGuardar}
@@ -54,6 +57,8 @@ export default function ClienteEditar() {
       />
     </div>
   ) : (
-    <p className="text-center">Cargando cliente...</p>
+    <p className="text-center text-gray-800 dark:text-gray-100">
+      Cargando cliente...
+    </p>
   );
 }
