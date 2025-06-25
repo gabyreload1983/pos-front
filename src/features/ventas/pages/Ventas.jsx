@@ -21,24 +21,30 @@ export default function Ventas() {
       {error && <p className="text-red-500">{error}</p>}
 
       {!loading && !error && (
-        <ul className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {ventas.map((venta) => (
-            <li
+            <div
               key={venta.id}
-              className="p-2 bg-gray-100 rounded dark:bg-gray-800"
+              className="border border-gray-300 bg-white rounded shadow p-4 flex flex-col justify-between"
             >
-              <p>
-                <strong>ID:</strong> {venta.id}
-              </p>
-              <p>
-                <strong>Total:</strong> ${venta.total}
-              </p>
-              <p>
-                <strong>Fecha:</strong> {new Date(venta.fecha).toLocaleString()}
-              </p>
-            </li>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Venta #{venta.id}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  <strong>Total:</strong> ${venta.total}
+                </p>
+                <p className="text-sm text-gray-500">
+                  <strong>Fecha:</strong>{" "}
+                  {new Date(venta.fecha).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">
+                  <strong>Pago:</strong> {venta.tipo_pago}
+                </p>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
