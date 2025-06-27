@@ -26,6 +26,12 @@ export default function Navbar() {
             >
               Clientes
             </Link>
+            <Link
+              to="/proveedores"
+              className="hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              Proveedores
+            </Link>
           </>
         )}
       </div>
