@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { articuloSchema } from "../schemas/articuloSchema";
+import { getCategorias, getMarcas } from "../services/articulosService";
 
 export default function FormularioArticulo({
   initialData = {},
@@ -9,8 +10,8 @@ export default function FormularioArticulo({
 }) {
   const [formData, setFormData] = useState(getDefaultForm());
   const [errors, setErrors] = useState({});
-  const [provincias, setProvincias] = useState([]);
-  const [ciudades, setCiudades] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
   const [submitFn, setSubmitFn] = useState(() => () => {});
 
@@ -21,10 +22,12 @@ export default function FormularioArticulo({
   }, [JSON.stringify(initialData)]);
 
   useEffect(() => {
-    if (formData.provincia_id) {
-      getCiudadesPorProvincia(formData.provincia_id).then(setCiudades);
-    }
-  }, [formData.provincia_id]);
+    getMarcas(formData.marca_id).then(setMarcas);
+  }, [formData.marca_id]);
+
+  useEffect(() => {
+    getCategorias(formData.categoria_id).then(setCategorias);
+  }, [formData.categoria_id]);
 
   function getDefaultForm() {
     return {
@@ -40,7 +43,7 @@ export default function FormularioArticulo({
       proveedor_id: null,
       codigo_barra: "",
       unidad_medida: "",
-      controla_stock: false,
+      controla_stock: null,
       activo: modoEdicion ? 1 : 0,
     };
   }
@@ -113,80 +116,103 @@ export default function FormularioArticulo({
         <Input
           label="costo"
           name="costo"
+          type="number"
           value={formData.costo}
           onChange={handleChange}
+          error={errors.costo}
         />
-        <Select
+        <Input
           label="Renta"
           name="renta"
+          type="number"
           value={formData.renta}
           onChange={handleChange}
-          options={[
-            { value: "DNI", label: "DNI" },
-            { value: "CUIT", label: "CUIT" },
-            { value: "CUIL", label: "CUIL" },
-            { value: "Pasaporte", label: "Pasaporte" },
-          ]}
+          error={errors.renta}
         />
         <Input
-          label="Número Documento"
-          name="numero_documento"
-          value={formData.numero_documento}
+          label="Precio Venta"
+          name="precio_venta"
+          type="number"
+          value={formData.precio_venta}
           onChange={handleChange}
-        />
-        <Input
-          label="CUIT"
-          name="cuit"
-          value={formData.cuit}
-          onChange={handleChange}
-        />
-        <Input
-          label="Email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-        />
-        <Input
-          label="Teléfono"
-          name="telefono"
-          value={formData.telefono}
-          onChange={handleChange}
-        />
-        <Input
-          label="Dirección"
-          name="direccion"
-          value={formData.direccion}
-          onChange={handleChange}
+          error={errors.precio_venta}
         />
         <Select
-          label="Provincia"
-          name="provincia_id"
-          value={formData.provincia_id}
-          onChange={handleNumberChange}
-          options={provincias.map((p) => ({ label: p.nombre, value: p.id }))}
-          error={errors.provincia_id}
-        />
-        <Select
-          label="Ciudad"
-          name="ciudad_id"
-          value={formData.ciudad_id}
-          onChange={handleNumberChange}
-          options={ciudades.map((c) => ({ label: c.nombre, value: c.id }))}
-          error={errors.ciudad_id}
-        />
-        <Select
-          label="Condición IVA"
-          name="condicion_iva"
-          value={formData.condicion_iva}
+          label="Iva"
+          name="iva_id"
+          value={formData.iva_id}
           onChange={handleChange}
           options={[
-            { value: "Responsable Inscripto", label: "Responsable Inscripto" },
-            { value: "Monotributo", label: "Monotributo" },
-            { value: "Consumidor Final", label: "Consumidor Final" },
-            { value: "Exento", label: "Exento" },
+            { value: "10.5", label: "10.5%" },
+            { value: "21", label: "21%" },
+            { value: "27", label: "27%" },
           ]}
+          error={errors.iva_id}
         />
+        <Select
+          label="Moneda"
+          name="moneda_id"
+          value={formData.moneda_id}
+          onChange={handleChange}
+          options={[
+            { value: "1", label: "ARS" },
+            { value: "2", label: "USD" },
+            { value: "3", label: "EUR" },
+          ]}
+          error={errors.moneda_id}
+        />
+        <Select
+          label="Marcas"
+          name="marca_id"
+          value={formData.marca_id}
+          onChange={handleNumberChange}
+          options={marcas.map((m) => ({ label: m.nombre, value: m.id }))}
+          error={errors.marca_id}
+        />
+        <Select
+          label="Categorias"
+          name="categoria_id"
+          value={formData.categoria_id}
+          onChange={handleChange}
+          options={categorias.map((c) => ({ label: c.nombre, value: c.id }))}
+          error={errors.categoria_id}
+        />
+        <Select
+          label="Proveedor"
+          name="proveedor_id"
+          value={formData.proveedor_id}
+          onChange={handleChange}
+          options={[
+            { value: "1", label: "Proveedor1" },
+            { value: "2", label: "Proveedor2" },
+            { value: "3", label: "Proveedor3" },
+            { value: "4", label: "Proveedor4" },
+            { value: "5", label: "Proveedor5" },
+          ]}
+          error={errors.proveedor_id}
+        />
+        <Input
+          label="Codigo de Barra"
+          name="codigo_barra"
+          value={formData.codigo_barra}
+          onChange={handleChange}
+          error={errors.codigo_barra}
+        />
+        <Input
+          label="Unidad de medida"
+          name="unidad_medida"
+          value={formData.unidad_medida}
+          onChange={handleChange}
+          error={errors.unidad_medida}
+        />
+        <Input
+          label="Control Stock"
+          name="controla_stock"
+          value={formData.controla_stock}
+          onChange={handleChange}
+          error={errors.controla_stock}
+        />
+
         {modoEdicion && (
           <Select
             label="Estado"

@@ -14,3 +14,13 @@ export async function actualizarArticulo(id, data) {
   const res = await api.put(`/articulos/${id}`, data);
   return res.data;
 }
+
+export async function getMarcas() {
+  const res = await api.get("/marcas");
+  return res.data;
+}
+
+export async function getCategorias() {
+  const res = await api.get("/categorias");
+  return res.data;
+}
