@@ -12,6 +12,10 @@ import ProveedoresRoot from "@/features/proveedores/pages/ProveedoresRoot";
 import ProveedoresLista from "@/features/proveedores/pages/ProveedoresLista";
 import ProveedorNuevo from "@/features/proveedores/pages/ProveedorNuevo";
 import ProveedorEditar from "@/features/proveedores/pages/ProveedorEditar";
+import ArticulosRoot from "@/features/articulos/pages/ArticulosRoot";
+import ArticulosLista from "@/features/articulos/pages/ArticulosLista";
+import ArticuloNuevo from "@/features/articulos/pages/ArticuloNuevo";
+import ArticuloEditar from "@/features/articulos/pages/ArticuloEditar";
 
 const routes = [
   {
@@ -52,6 +56,19 @@ const routes = [
           { path: "lista", element: <ProveedoresLista /> },
           { path: "agregar", element: <ProveedorNuevo /> },
           { path: "modificar/:id", element: <ProveedorEditar /> },
+        ],
+      },
+      {
+        path: "/articulos",
+        element: (
+          <PrivateRoute>
+            <ArticulosRoot />
+          </PrivateRoute>
+        ),
+        children: [
+          { path: "lista", element: <ArticulosLista /> },
+          { path: "agregar", element: <ArticuloNuevo /> },
+          { path: "modificar/:id", element: <ArticuloEditar /> },
         ],
       },
     ],
