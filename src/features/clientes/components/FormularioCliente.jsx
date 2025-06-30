@@ -3,6 +3,7 @@ import { clienteSchema } from "../schemas/clienteSchema";
 import {
   getProvincias,
   getCiudadesPorProvincia,
+  getCondicionesIva,
 } from "../services/localizacionService";
 
 export default function FormularioCliente({
@@ -15,6 +16,7 @@ export default function FormularioCliente({
   const [errors, setErrors] = useState({});
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
+  const [condicionesIva, setCondicionesIva] = useState([]);
 
   const [submitFn, setSubmitFn] = useState(() => () => {});
 
@@ -34,19 +36,23 @@ export default function FormularioCliente({
     }
   }, [formData.provincia_id]);
 
+  useEffect(() => {
+    getCondicionesIva().then(setCondicionesIva);
+  }, []);
+
   function getDefaultForm() {
     return {
       nombre: "",
       apellido: "",
       razon_social: "",
-      tipo_documento: "DNI",
+      tipo_documento: "",
       numero_documento: "",
       email: "",
       telefono: "",
       direccion: "",
       ciudad_id: "",
       provincia_id: "",
-      condicion_iva: "Consumidor Final",
+      condicion_iva_id: "",
       cuit: "",
     };
   }
@@ -121,6 +127,7 @@ export default function FormularioCliente({
           name="razon_social"
           value={formData.razon_social}
           onChange={handleChange}
+          error={errors.razon_social}
         />
         <Select
           label="Tipo Documento"
@@ -133,18 +140,21 @@ export default function FormularioCliente({
             { value: "CUIL", label: "CUIL" },
             { value: "Pasaporte", label: "Pasaporte" },
           ]}
+          error={errors.tipo_documento}
         />
         <Input
           label="Número Documento"
           name="numero_documento"
           value={formData.numero_documento}
           onChange={handleChange}
+          error={errors.numero_documento}
         />
         <Input
           label="CUIT"
           name="cuit"
           value={formData.cuit}
           onChange={handleChange}
+          error={errors.cuit}
         />
         <Input
           label="Email"
@@ -158,12 +168,14 @@ export default function FormularioCliente({
           name="telefono"
           value={formData.telefono}
           onChange={handleChange}
+          error={errors.telefono}
         />
         <Input
           label="Dirección"
           name="direccion"
           value={formData.direccion}
           onChange={handleChange}
+          error={errors.direccion}
         />
         <Select
           label="Provincia"
@@ -184,14 +196,13 @@ export default function FormularioCliente({
         <Select
           label="Condición IVA"
           name="condicion_iva"
-          value={formData.condicion_iva}
+          value={formData.condicion_iva_id}
           onChange={handleChange}
-          options={[
-            { value: "Responsable Inscripto", label: "Responsable Inscripto" },
-            { value: "Monotributo", label: "Monotributo" },
-            { value: "Consumidor Final", label: "Consumidor Final" },
-            { value: "Exento", label: "Exento" },
-          ]}
+          options={condicionesIva.map((ci) => ({
+            label: ci.nombre,
+            value: ci.id,
+          }))}
+          error={errors.condicion_iva}
         />
         {modoEdicion && (
           <Select

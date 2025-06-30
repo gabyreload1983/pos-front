@@ -5,7 +5,14 @@ export const clienteSchema = z.object({
   apellido: z.string().min(1, "El apellido es obligatorio"),
 
   razon_social: z.string().optional().nullable(),
-  tipo_documento: z.enum(["DNI", "CUIT", "CUIL", "Pasaporte"]).default("DNI"),
+  tipo_documento: z
+    .union([
+      z.enum(["DNI", "CUIT", "CUIL", "Pasaporte"]),
+      z.literal(""),
+      z.null(),
+    ])
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
   numero_documento: z.string().optional().nullable(),
 
   email: z
@@ -27,14 +34,10 @@ export const clienteSchema = z.object({
     .transform((v) => (v === "" ? null : v))
     .optional(),
 
-  condicion_iva: z
-    .enum([
-      "Responsable Inscripto",
-      "Monotributo",
-      "Consumidor Final",
-      "Exento",
-    ])
-    .default("Consumidor Final"),
+  condicion_iva_id: z
+    .union([z.coerce.number().int().positive(), z.literal(""), z.null()])
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
 
   activo: z.union([z.literal(1), z.literal(0)]).optional(),
 });
