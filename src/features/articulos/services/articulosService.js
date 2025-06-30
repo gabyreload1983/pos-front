@@ -24,3 +24,13 @@ export async function getCategorias() {
   const res = await api.get("/categorias");
   return res.data;
 }
+
+export async function getMonedas() {
+  const res = await api.get("/monedas");
+  return res.data;
+}
+
+export async function getIvaAliquotas() {
+  const res = await api.get("/iva-aliquotas");
+  return res.data;
+}

@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { articuloSchema } from "../schemas/articuloSchema";
-import { getCategorias, getMarcas } from "../services/articulosService";
+import {
+  getCategorias,
+  getIvaAliquotas,
+  getMarcas,
+  getMonedas,
+} from "../services/articulosService";
 
 export default function FormularioArticulo({
   initialData = {},
@@ -12,6 +17,8 @@ export default function FormularioArticulo({
   const [errors, setErrors] = useState({});
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [monedas, setMonedas] = useState([]);
+  const [aliquotasIva, setIliquotasIva] = useState([]);
 
   const [submitFn, setSubmitFn] = useState(() => () => {});
 
@@ -29,6 +36,14 @@ export default function FormularioArticulo({
     getCategorias(formData.categoria_id).then(setCategorias);
   }, [formData.categoria_id]);
 
+  useEffect(() => {
+    getMonedas(formData.moneda_id).then(setMonedas);
+  }, [formData.moneda_id]);
+
+  useEffect(() => {
+    getIvaAliquotas(formData.iva_aliquota_id).then(setIliquotasIva);
+  }, [formData.iva_aliquota_id]);
+
   function getDefaultForm() {
     return {
       nombre: "",
@@ -36,8 +51,8 @@ export default function FormularioArticulo({
       costo: 0,
       renta: 0,
       precio_venta: 0,
-      iva_id: 1,
-      moneda_id: 1,
+      iva_aliquota_id: null,
+      moneda_id: null,
       categoria_id: null,
       marca_id: null,
       proveedor_id: null,
@@ -138,27 +153,22 @@ export default function FormularioArticulo({
           error={errors.precio_venta}
         />
         <Select
-          label="Iva"
-          name="iva_id"
-          value={formData.iva_id}
+          label="Condicion IVA"
+          name="iva_aliquota_id"
+          value={formData.iva_aliquota_id}
           onChange={handleChange}
-          options={[
-            { value: "10.5", label: "10.5%" },
-            { value: "21", label: "21%" },
-            { value: "27", label: "27%" },
-          ]}
-          error={errors.iva_id}
+          options={aliquotasIva.map((i) => ({
+            label: i.descripcion,
+            value: i.id,
+          }))}
+          error={errors.iva_aliquota_id}
         />
         <Select
           label="Moneda"
           name="moneda_id"
           value={formData.moneda_id}
           onChange={handleChange}
-          options={[
-            { value: "1", label: "ARS" },
-            { value: "2", label: "USD" },
-            { value: "3", label: "EUR" },
-          ]}
+          options={monedas.map((m) => ({ label: m.nombre, value: m.id }))}
           error={errors.moneda_id}
         />
         <Select
