@@ -4,6 +4,7 @@ import {
   getProvincias,
   getCiudadesPorProvincia,
   getCondicionesIva,
+  getTiposDocumento,
 } from "../../../service/datosGeneralesService";
 
 export default function FormularioCliente({
@@ -17,6 +18,7 @@ export default function FormularioCliente({
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [condicionesIva, setCondicionesIva] = useState([]);
+  const [tiposDocumento, setTiposDocumento] = useState([]);
 
   const [submitFn, setSubmitFn] = useState(() => () => {});
 
@@ -40,20 +42,23 @@ export default function FormularioCliente({
     getCondicionesIva().then(setCondicionesIva);
   }, []);
 
+  useEffect(() => {
+    getTiposDocumento().then(setTiposDocumento);
+  }, []);
+
   function getDefaultForm() {
     return {
       nombre: "",
       apellido: "",
       razon_social: "",
-      tipo_documento: "",
-      numero_documento: "",
+      tipo_documento_id: "",
+      documento: "",
       email: "",
       telefono: "",
       direccion: "",
       ciudad_id: "",
       provincia_id: "",
       condicion_iva_id: "",
-      cuit: "",
     };
   }
 
@@ -98,6 +103,13 @@ export default function FormularioCliente({
     }
   }, [onSubmit]);
 
+  const condicionConsumidorFinal = condicionesIva.find(
+    (ci) => ci.nombre === "Consumidor Final"
+  );
+  const documentoCUIL = tiposDocumento.find((td) => td.nombre === "CUIL");
+  const esConsumidorFinal =
+    Number(formData.condicion_iva_id) === condicionConsumidorFinal?.id;
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -107,55 +119,76 @@ export default function FormularioCliente({
         Datos del Cliente
       </h3>
 
+      <Select
+        label="Condición IVA"
+        name="condicion_iva_id"
+        value={formData.condicion_iva_id}
+        onChange={handleChange}
+        options={condicionesIva.map((ci) => ({
+          label: ci.nombre,
+          value: ci.id,
+        }))}
+        error={errors.condicion_iva_id}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="Nombre"
-          name="nombre"
-          value={formData.nombre}
-          onChange={handleChange}
-          error={errors.nombre}
-        />
-        <Input
-          label="Apellido"
-          name="apellido"
-          value={formData.apellido}
-          onChange={handleChange}
-          error={errors.apellido}
-        />
-        <Input
-          label="Razón Social"
-          name="razon_social"
-          value={formData.razon_social}
-          onChange={handleChange}
-          error={errors.razon_social}
-        />
         <Select
-          label="Tipo Documento"
-          name="tipo_documento"
-          value={formData.tipo_documento}
-          onChange={handleChange}
-          options={[
-            { value: "DNI", label: "DNI" },
-            { value: "CUIT", label: "CUIT" },
-            { value: "CUIL", label: "CUIL" },
-            { value: "Pasaporte", label: "Pasaporte" },
-          ]}
-          error={errors.tipo_documento}
+          label="Tipo de Documento"
+          name="tipo_documento_id"
+          value={formData.tipo_documento_id}
+          onChange={handleNumberChange}
+          options={
+            esConsumidorFinal
+              ? tiposDocumento
+                  .filter((d) => d.nombre === "DNI" || d.nombre === "CUIL")
+                  .map((d) => ({ label: d.nombre, value: d.id }))
+              : tiposDocumento
+                  .filter((d) => d.nombre === "CUIT")
+                  .map((d) => ({ label: d.nombre, value: d.id }))
+          }
+          error={errors.tipo_documento_id}
         />
         <Input
-          label="Número Documento"
-          name="numero_documento"
-          value={formData.numero_documento}
+          label={
+            esConsumidorFinal
+              ? formData.tipo_documento_id === documentoCUIL?.id
+                ? "Número de CUIL"
+                : "Número de DNI"
+              : "CUIT"
+          }
+          name="documento"
+          value={formData.documento}
           onChange={handleChange}
-          error={errors.numero_documento}
+          error={errors.documento}
         />
-        <Input
-          label="CUIT"
-          name="cuit"
-          value={formData.cuit}
-          onChange={handleChange}
-          error={errors.cuit}
-        />
+        {esConsumidorFinal ? (
+          <>
+            <Input
+              label="Nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              error={errors.nombre}
+            />
+            <Input
+              label="Apellido"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              error={errors.apellido}
+            />
+          </>
+        ) : (
+          <>
+            <Input
+              label="Razón Social"
+              name="razon_social"
+              value={formData.razon_social}
+              onChange={handleChange}
+              error={errors.razon_social}
+            />
+          </>
+        )}
+
         <Input
           label="Email"
           name="email"
@@ -193,17 +226,7 @@ export default function FormularioCliente({
           options={ciudades.map((c) => ({ label: c.nombre, value: c.id }))}
           error={errors.ciudad_id}
         />
-        <Select
-          label="Condición IVA"
-          name="condicion_iva_id"
-          value={formData.condicion_iva_id}
-          onChange={handleChange}
-          options={condicionesIva.map((ci) => ({
-            label: ci.nombre,
-            value: ci.id,
-          }))}
-          error={errors.condicion_iva_id}
-        />
+
         {modoEdicion && (
           <Select
             label="Estado"

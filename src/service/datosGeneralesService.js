@@ -14,3 +14,8 @@ export async function getCondicionesIva() {
   const res = await api.get("/condiciones-iva");
   return res.data;
 }
+
+export async function getTiposDocumento() {
+  const res = await api.get("/tipos-documento");
+  return res.data;
+}
