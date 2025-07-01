@@ -3,7 +3,7 @@ import { ProveedorSchema } from "../schemas/proveedorSchema";
 import {
   getProvincias,
   getCiudadesPorProvincia,
-} from "../services/localizacionService";
+} from "../../../service/datosGeneralesService";
 
 export default function FormularioProveedores({
   initialData = {},
