@@ -3,6 +3,7 @@ import { ProveedorSchema } from "../schemas/proveedorSchema";
 import {
   getProvincias,
   getCiudadesPorProvincia,
+  getCondicionesIva,
 } from "../../../service/datosGeneralesService";
 
 export default function FormularioProveedores({
@@ -15,8 +16,7 @@ export default function FormularioProveedores({
   const [errors, setErrors] = useState({});
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
-
-  const [submitFn, setSubmitFn] = useState(() => () => {});
+  const [condicionesIva, setCondicionesIva] = useState([]);
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -34,19 +34,21 @@ export default function FormularioProveedores({
     }
   }, [formData.provincia_id]);
 
+  useEffect(() => {
+    getCondicionesIva().then(setCondicionesIva);
+  }, []);
+
   function getDefaultForm() {
     return {
       nombre: "",
       razon_social: "",
-      tipo_documento: "DNI",
-      numero_documento: "",
+      cuit: "",
       email: "",
       telefono: "",
       direccion: "",
       ciudad_id: "",
       provincia_id: "",
-      condicion_iva: "Consumidor Final",
-      cuit: "",
+      condicion_iva_id: "",
     };
   }
 
@@ -60,36 +62,31 @@ export default function FormularioProveedores({
     setFormData((prev) => ({ ...prev, [name]: Number(value) }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const result = ProveedorSchema.safeParse(formData);
 
     if (!result.success) {
       setErrors(result.error.flatten().fieldErrors);
-    } else {
-      setErrors({});
-      submitFn(result.data); // <-- aquí
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      await onSubmit(result.data); // ← llamada real
       if (!modoEdicion) setFormData(getDefaultForm());
+    } catch (erroresDelBackend) {
+      // Transformar errores del backend a { campo: [mensaje] }
+      const fieldErrors = {};
+      if (Array.isArray(erroresDelBackend)) {
+        erroresDelBackend.forEach((e) => {
+          fieldErrors[e.campo] = [e.mensaje];
+        });
+      }
+      setErrors(fieldErrors);
     }
   };
-
-  useEffect(() => {
-    if (typeof onSubmit === "function") {
-      const submitConErrores = async (data) => {
-        try {
-          await onSubmit(data);
-        } catch (erroresDelBackend) {
-          // Transformar formato [{campo, mensaje}] a { campo: [mensaje] }
-          const fieldErrors = {};
-          erroresDelBackend.forEach((e) => {
-            fieldErrors[e.campo] = [e.mensaje];
-          });
-          setErrors(fieldErrors);
-        }
-      };
-      setSubmitFn(() => submitConErrores);
-    }
-  }, [onSubmit]);
 
   return (
     <form
@@ -116,24 +113,15 @@ export default function FormularioProveedores({
           error={errors.razon_social}
         />
         <Select
-          label="Tipo Documento"
-          name="tipo_documento"
-          value={formData.tipo_documento}
+          label="Condición IVA"
+          name="condicion_iva_id"
+          value={formData.condicion_iva_id}
           onChange={handleChange}
-          options={[
-            { value: "DNI", label: "DNI" },
-            { value: "CUIT", label: "CUIT" },
-            { value: "CUIL", label: "CUIL" },
-            { value: "Pasaporte", label: "Pasaporte" },
-          ]}
-          error={errors.tipo_documento}
-        />
-        <Input
-          label="Número Documento"
-          name="numero_documento"
-          value={formData.numero_documento}
-          onChange={handleChange}
-          error={errors.numero_documento}
+          options={condicionesIva.map((ci) => ({
+            label: ci.nombre,
+            value: ci.id,
+          }))}
+          error={errors.condicion_iva_id}
         />
         <Input
           label="CUIT"
@@ -179,19 +167,7 @@ export default function FormularioProveedores({
           options={ciudades.map((c) => ({ label: c.nombre, value: c.id }))}
           error={errors.ciudad_id}
         />
-        <Select
-          label="Condición IVA"
-          name="condicion_iva"
-          value={formData.condicion_iva}
-          onChange={handleChange}
-          options={[
-            { value: "Responsable Inscripto", label: "Responsable Inscripto" },
-            { value: "Monotributo", label: "Monotributo" },
-            { value: "Consumidor Final", label: "Consumidor Final" },
-            { value: "Exento", label: "Exento" },
-          ]}
-          error={errors.condicion_iva}
-        />
+
         {modoEdicion && (
           <Select
             label="Estado"
