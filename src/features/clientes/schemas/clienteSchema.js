@@ -4,7 +4,6 @@ import { z } from "zod";
 // pero para validación local, los incluimos aquí.
 const CONSUMIDOR_FINAL_ID = 1;
 const TIPO_DOCUMENTO_CUIT_ID = 2;
-
 export const clienteSchema = z
   .object({
     nombre: z.string().optional().nullable(),
@@ -47,22 +46,47 @@ export const clienteSchema = z
 
     activo: z.union([z.literal(1), z.literal(0)]).optional(),
   })
-  .refine(
-    (data) => {
-      const esCF = data.condicion_iva_id === CONSUMIDOR_FINAL_ID;
+  .superRefine((data, ctx) => {
+    const esCF = data.condicion_iva_id === CONSUMIDOR_FINAL_ID;
 
-      if (esCF) {
-        return !!data.nombre?.trim() && !!data.apellido?.trim();
+    if (esCF) {
+      if (!data.nombre?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["nombre"],
+          message: "El nombre es obligatorio para Consumidor Final",
+        });
+      }
+      if (!data.apellido?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["apellido"],
+          message: "El apellido es obligatorio para Consumidor Final",
+        });
+      }
+    } else {
+      if (!data.razon_social?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["razon_social"],
+          message: "La razón social es obligatoria",
+        });
       }
 
-      const razonOk = !!data.razon_social?.trim();
-      const tipoDocOk = data.tipo_documento_id === TIPO_DOCUMENTO_CUIT_ID;
-      const cuitOk = !!data.documento?.match(/^\d{11}$/);
+      if (data.tipo_documento_id !== TIPO_DOCUMENTO_CUIT_ID) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["tipo_documento_id"],
+          message: "Debe seleccionar CUIT como tipo de documento",
+        });
+      }
 
-      return razonOk && tipoDocOk && cuitOk;
-    },
-    {
-      message: "Debe completar los campos requeridos según el tipo de cliente.",
-      path: ["condicion_iva_id"],
+      if (!data.documento?.match(/^\d{11}$/)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["documento"],
+          message: "El CUIT debe tener 11 dígitos numéricos",
+        });
+      }
     }
-  );
+  });

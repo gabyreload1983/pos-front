@@ -20,8 +20,6 @@ export default function FormularioCliente({
   const [condicionesIva, setCondicionesIva] = useState([]);
   const [tiposDocumento, setTiposDocumento] = useState([]);
 
-  const [submitFn, setSubmitFn] = useState(() => () => {});
-
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({ ...prev, ...initialData }));
@@ -46,6 +44,28 @@ export default function FormularioCliente({
     getTiposDocumento().then(setTiposDocumento);
   }, []);
 
+  useEffect(() => {
+    const dni = tiposDocumento.find((d) => d.nombre === "DNI");
+    const cuit = tiposDocumento.find((d) => d.nombre === "CUIT");
+
+    if (esConsumidorFinal) {
+      // Si ya hay tipo_documento_id válido (DNI o CUIL), no tocar
+      const docValido = tiposDocumento.some(
+        (d) =>
+          (d.nombre === "DNI" || d.nombre === "CUIL") &&
+          d.id === Number(formData.tipo_documento_id)
+      );
+      if (!docValido && dni) {
+        setFormData((prev) => ({ ...prev, tipo_documento_id: dni.id }));
+      }
+    } else {
+      // Si no es CF, forzar CUIT
+      if (cuit && Number(formData.tipo_documento_id) !== cuit.id) {
+        setFormData((prev) => ({ ...prev, tipo_documento_id: cuit.id }));
+      }
+    }
+  }, [formData.condicion_iva_id, tiposDocumento]);
+
   function getDefaultForm() {
     return {
       nombre: "",
@@ -58,7 +78,7 @@ export default function FormularioCliente({
       direccion: "",
       ciudad_id: "",
       provincia_id: "",
-      condicion_iva_id: "",
+      condicion_iva_id: 1,
     };
   }
 
@@ -72,36 +92,30 @@ export default function FormularioCliente({
     setFormData((prev) => ({ ...prev, [name]: Number(value) }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const result = clienteSchema.safeParse(formData);
 
     if (!result.success) {
       setErrors(result.error.flatten().fieldErrors);
-    } else {
-      setErrors({});
-      submitFn(result.data); // <-- aquí
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      await onSubmit(result.data); // Llamada al backend
       if (!modoEdicion) setFormData(getDefaultForm());
+    } catch (erroresDelBackend) {
+      const fieldErrors = {};
+      if (Array.isArray(erroresDelBackend)) {
+        erroresDelBackend.forEach((e) => {
+          fieldErrors[e.campo] = [e.mensaje];
+        });
+      }
+      setErrors(fieldErrors);
     }
   };
-
-  useEffect(() => {
-    if (typeof onSubmit === "function") {
-      const submitConErrores = async (data) => {
-        try {
-          await onSubmit(data);
-        } catch (erroresDelBackend) {
-          // Transformar formato [{campo, mensaje}] a { campo: [mensaje] }
-          const fieldErrors = {};
-          erroresDelBackend.forEach((e) => {
-            fieldErrors[e.campo] = [e.mensaje];
-          });
-          setErrors(fieldErrors);
-        }
-      };
-      setSubmitFn(() => submitConErrores);
-    }
-  }, [onSubmit]);
 
   const condicionConsumidorFinal = condicionesIva.find(
     (ci) => ci.nombre === "Consumidor Final"
@@ -131,6 +145,34 @@ export default function FormularioCliente({
         error={errors.condicion_iva_id}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {esConsumidorFinal ? (
+          <>
+            <Input
+              label="Nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              error={errors.nombre}
+            />
+            <Input
+              label="Apellido"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              error={errors.apellido}
+            />
+          </>
+        ) : (
+          <>
+            <Input
+              label="Razón Social"
+              name="razon_social"
+              value={formData.razon_social}
+              onChange={handleChange}
+              error={errors.razon_social}
+            />
+          </>
+        )}
         <Select
           label="Tipo de Documento"
           name="tipo_documento_id"
@@ -160,34 +202,6 @@ export default function FormularioCliente({
           onChange={handleChange}
           error={errors.documento}
         />
-        {esConsumidorFinal ? (
-          <>
-            <Input
-              label="Nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              error={errors.nombre}
-            />
-            <Input
-              label="Apellido"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              error={errors.apellido}
-            />
-          </>
-        ) : (
-          <>
-            <Input
-              label="Razón Social"
-              name="razon_social"
-              value={formData.razon_social}
-              onChange={handleChange}
-              error={errors.razon_social}
-            />
-          </>
-        )}
 
         <Input
           label="Email"
