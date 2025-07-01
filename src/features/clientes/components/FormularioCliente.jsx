@@ -4,7 +4,7 @@ import {
   getProvincias,
   getCiudadesPorProvincia,
   getCondicionesIva,
-} from "../services/localizacionService";
+} from "../../../service/datosGeneralesService";
 
 export default function FormularioCliente({
   initialData = {},
@@ -195,14 +195,14 @@ export default function FormularioCliente({
         />
         <Select
           label="Condición IVA"
-          name="condicion_iva"
+          name="condicion_iva_id"
           value={formData.condicion_iva_id}
           onChange={handleChange}
           options={condicionesIva.map((ci) => ({
             label: ci.nombre,
             value: ci.id,
           }))}
-          error={errors.condicion_iva}
+          error={errors.condicion_iva_id}
         />
         {modoEdicion && (
           <Select
