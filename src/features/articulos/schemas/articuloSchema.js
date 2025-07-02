@@ -18,13 +18,6 @@ export const articuloSchema = z.object({
       message: "Debe ser un valor válido de renta",
     }),
 
-  precio_venta: z
-    .union([z.string(), z.number()])
-    .transform(Number)
-    .refine((n) => n >= 0.1 && n <= 99999999.99, {
-      message: "Debe ser un precio válido",
-    }),
-
   iva_aliquota_id: z
     .union([z.string(), z.number()])
     .transform(Number)
@@ -71,8 +64,10 @@ export const articuloSchema = z.object({
     .union([z.boolean(), z.string(), z.number()])
     .transform((val) => val === true || val === "1" || val === 1)
     .optional(),
-
-  activo: z.union([z.literal(1), z.literal(0)]).optional(),
 });
 
-export const updateArticuloSchema = articuloSchema.partial();
+export const updateArticuloSchema = articuloSchema
+  .extend({
+    activo: z.union([z.literal(1), z.literal(0)]).optional(),
+  })
+  .partial();

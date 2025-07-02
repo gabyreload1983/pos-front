@@ -42,13 +42,23 @@ export default function FormularioArticulo({
     getIvaAliquotas(formData.iva_aliquota_id).then(setIliquotasIva);
   }, [formData.iva_aliquota_id]);
 
+  const aliquotaSeleccionada = aliquotasIva.find(
+    (a) => Number(a.id) === Number(formData.iva_aliquota_id)
+  );
+  const porcentajeIva = aliquotaSeleccionada?.porcentaje || 0;
+
+  const precioVenta = calcularPrecioVenta(
+    Number(formData.costo),
+    Number(formData.renta)
+  );
+  const precioFinal = calcularPrecioFinal(precioVenta, porcentajeIva);
+
   function getDefaultForm() {
     return {
       nombre: "",
       descripcion: "",
       costo: 0,
       renta: 0,
-      precio_venta: 0,
       iva_aliquota_id: null,
       moneda_id: null,
       categoria_id: null,
@@ -134,14 +144,20 @@ export default function FormularioArticulo({
           onChange={handleChange}
           error={errors.renta}
         />
-        <Input
-          label="Precio Venta"
-          name="precio_venta"
-          type="number"
-          value={formData.precio_venta}
-          onChange={handleChange}
-          error={errors.precio_venta}
-        />
+        <div className="col-span-1 md:col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Precio de Venta
+          </h4>
+          <div className="flex justify-between text-base text-gray-800 dark:text-gray-100">
+            <span>Precio sin IVA:</span>
+            <span>${precioVenta.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-base text-gray-800 dark:text-gray-100 mt-1">
+            <span>Precio final (con {porcentajeIva}% IVA):</span>
+            <span>${precioFinal.toFixed(2)}</span>
+          </div>
+        </div>
+
         <Select
           label="Condicion IVA"
           name="iva_aliquota_id"
@@ -197,13 +213,6 @@ export default function FormularioArticulo({
           value={formData.codigo_barra}
           onChange={handleChange}
           error={errors.codigo_barra}
-        />
-        <Input
-          label="Unidad de medida"
-          name="unidad_medida"
-          value={formData.unidad_medida}
-          onChange={handleChange}
-          error={errors.unidad_medida}
         />
 
         <div>
@@ -287,6 +296,13 @@ export default function FormularioArticulo({
             </p>
           )}
         </div>
+        <Input
+          label="Unidad de medida"
+          name="unidad_medida"
+          value={formData.unidad_medida}
+          onChange={handleChange}
+          error={errors.unidad_medida}
+        />
 
         {modoEdicion && (
           <Select
@@ -363,4 +379,14 @@ function Select({ label, name, value, onChange, options, error }) {
       {error && <p className="text-sm text-red-600 mt-1">{error[0]}</p>}
     </div>
   );
+}
+
+function calcularPrecioVenta(costo, renta) {
+  const base = costo + (costo * renta) / 100;
+  return parseFloat(base.toFixed(2));
+}
+
+function calcularPrecioFinal(precioVenta, aliquota) {
+  if (!aliquota) return precioVenta;
+  return parseFloat((precioVenta * (1 + aliquota / 100)).toFixed(2));
 }
