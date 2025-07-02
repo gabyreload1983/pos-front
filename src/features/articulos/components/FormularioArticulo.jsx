@@ -20,8 +20,6 @@ export default function FormularioArticulo({
   const [monedas, setMonedas] = useState([]);
   const [aliquotasIva, setIliquotasIva] = useState([]);
 
-  const [submitFn, setSubmitFn] = useState(() => () => {});
-
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({ ...prev, ...initialData }));
@@ -58,8 +56,9 @@ export default function FormularioArticulo({
       proveedor_id: null,
       codigo_barra: "",
       unidad_medida: "",
-      controla_stock: null,
-      activo: modoEdicion ? 1 : 0,
+      controla_stock: false,
+      tiene_nro_serie: false,
+      activo: 1,
     };
   }
 
@@ -73,36 +72,27 @@ export default function FormularioArticulo({
     setFormData((prev) => ({ ...prev, [name]: Number(value) }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const result = articuloSchema.safeParse(formData);
 
     if (!result.success) {
       setErrors(result.error.flatten().fieldErrors);
-    } else {
+      return;
+    }
+
+    try {
+      await onSubmit(result.data);
       setErrors({});
-      submitFn(result.data); // <-- aquí
       if (!modoEdicion) setFormData(getDefaultForm());
+    } catch (erroresDelBackend) {
+      const fieldErrors = {};
+      erroresDelBackend.forEach((e) => {
+        fieldErrors[e.campo] = [e.mensaje];
+      });
+      setErrors(fieldErrors);
     }
   };
-
-  useEffect(() => {
-    if (typeof onSubmit === "function") {
-      const submitConErrores = async (data) => {
-        try {
-          await onSubmit(data);
-        } catch (erroresDelBackend) {
-          // Transformar formato [{campo, mensaje}] a { campo: [mensaje] }
-          const fieldErrors = {};
-          erroresDelBackend.forEach((e) => {
-            fieldErrors[e.campo] = [e.mensaje];
-          });
-          setErrors(fieldErrors);
-        }
-      };
-      setSubmitFn(() => submitConErrores);
-    }
-  }, [onSubmit]);
 
   return (
     <form
@@ -215,13 +205,88 @@ export default function FormularioArticulo({
           onChange={handleChange}
           error={errors.unidad_medida}
         />
-        <Input
-          label="Control Stock"
-          name="controla_stock"
-          value={formData.controla_stock}
-          onChange={handleChange}
-          error={errors.controla_stock}
-        />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            ¿Tiene número de serie?
+          </label>
+          <div className="flex items-center gap-3 mt-1">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={formData.tiene_nro_serie}
+              onClick={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  tiene_nro_serie: !prev.tiene_nro_serie,
+                  controla_stock: !prev.tiene_nro_serie
+                    ? true
+                    : prev.controla_stock,
+                }))
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.tiene_nro_serie ? "bg-blue-600" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.tiene_nro_serie ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {formData.tiene_nro_serie ? "Sí" : "No"}
+            </span>
+          </div>
+          {errors.tiene_nro_serie && (
+            <p className="text-sm text-red-600 mt-1">
+              {errors.tiene_nro_serie}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            ¿Controla stock?
+          </label>
+          <div className="flex items-center gap-3 mt-1">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={formData.controla_stock}
+              disabled={formData.tiene_nro_serie}
+              onClick={() =>
+                !formData.tiene_nro_serie &&
+                setFormData((prev) => ({
+                  ...prev,
+                  controla_stock: !prev.controla_stock,
+                }))
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.controla_stock ? "bg-blue-600" : "bg-gray-300"
+              } ${
+                formData.tiene_nro_serie ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.controla_stock ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {formData.controla_stock ? "Sí" : "No"}
+            </span>
+          </div>
+          {errors.controla_stock && (
+            <p className="text-sm text-red-600 mt-1">{errors.controla_stock}</p>
+          )}
+          {formData.tiene_nro_serie && (
+            <p className="text-xs text-gray-500 mt-1 italic">
+              Obligatorio si el artículo tiene número de serie
+            </p>
+          )}
+        </div>
 
         {modoEdicion && (
           <Select
