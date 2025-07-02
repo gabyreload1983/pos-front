@@ -34,3 +34,8 @@ export async function getIvaAliquotas() {
   const res = await api.get("/iva-aliquotas");
   return res.data;
 }
+
+export async function getProveedores() {
+  const res = await api.get("/proveedores");
+  return res.data;
+}

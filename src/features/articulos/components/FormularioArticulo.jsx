@@ -5,6 +5,7 @@ import {
   getIvaAliquotas,
   getMarcas,
   getMonedas,
+  getProveedores,
 } from "../services/articulosService";
 
 export default function FormularioArticulo({
@@ -18,7 +19,8 @@ export default function FormularioArticulo({
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [monedas, setMonedas] = useState([]);
-  const [aliquotasIva, setIliquotasIva] = useState([]);
+  const [ivaAliquota, setIvaAliquota] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -27,22 +29,14 @@ export default function FormularioArticulo({
   }, [JSON.stringify(initialData)]);
 
   useEffect(() => {
-    getMarcas(formData.marca_id).then(setMarcas);
-  }, [formData.marca_id]);
+    getMarcas().then(setMarcas);
+    getCategorias().then(setCategorias);
+    getMonedas().then(setMonedas);
+    getIvaAliquotas().then(setIvaAliquota);
+    getProveedores().then(setProveedores);
+  }, []);
 
-  useEffect(() => {
-    getCategorias(formData.categoria_id).then(setCategorias);
-  }, [formData.categoria_id]);
-
-  useEffect(() => {
-    getMonedas(formData.moneda_id).then(setMonedas);
-  }, [formData.moneda_id]);
-
-  useEffect(() => {
-    getIvaAliquotas(formData.iva_aliquota_id).then(setIliquotasIva);
-  }, [formData.iva_aliquota_id]);
-
-  const aliquotaSeleccionada = aliquotasIva.find(
+  const aliquotaSeleccionada = ivaAliquota.find(
     (a) => Number(a.id) === Number(formData.iva_aliquota_id)
   );
   const porcentajeIva = aliquotaSeleccionada?.porcentaje || 0;
@@ -163,7 +157,7 @@ export default function FormularioArticulo({
           name="iva_aliquota_id"
           value={formData.iva_aliquota_id}
           onChange={handleChange}
-          options={aliquotasIva.map((i) => ({
+          options={ivaAliquota.map((i) => ({
             label: i.descripcion,
             value: i.id,
           }))}
@@ -198,13 +192,7 @@ export default function FormularioArticulo({
           name="proveedor_id"
           value={formData.proveedor_id}
           onChange={handleChange}
-          options={[
-            { value: "1", label: "Proveedor1" },
-            { value: "2", label: "Proveedor2" },
-            { value: "3", label: "Proveedor3" },
-            { value: "4", label: "Proveedor4" },
-            { value: "5", label: "Proveedor5" },
-          ]}
+          options={proveedores.map((p) => ({ label: p.nombre, value: p.id }))}
           error={errors.proveedor_id}
         />
         <Input
