@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { obtenerVentas } from "../services/ventasService";
 
-export default function Ventas() {
+export default function VentasLista() {
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,8 +15,6 @@ export default function Ventas() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Ventas</h2>
-
       {loading && <p>Cargando ventas...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
